@@ -207,7 +207,7 @@ namespace Blowfish
 		{ 
 			byte[] msgBytes = Encoding.ASCII.GetBytes(message);
 			int length = msgBytes.Length;
-			if (length % 8 != 0)
+			if (length % 8 != 0 || length = 0)
             {
 				Array.Resize(ref msgBytes, length + 8 - length % 8);
 				for (int i = length; i < length + 8 - length % 8; i++)
