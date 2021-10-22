@@ -200,6 +200,7 @@ namespace Blowfish
                 Key = new byte[56]; // 56 * 8 = 448
                 new Random().NextBytes(Key);
             }
+	    else { Key = key; }
             initP(); keyExpand();
         }
 		public byte[] encryptMessage(string message)
