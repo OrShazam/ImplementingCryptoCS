@@ -7,12 +7,13 @@ namespace MD5CS
     {
         private int[] s = new int[64]; private uint[] K = new uint[64];
         private uint a0, b0, c0, d0;
-        public MD5() {
+        public MD5()
+        {
             a0 = 0x67452301; b0 = 0xefcdab89; c0 = 0x98badcfe; d0 = 0x10325476;
             InitK(); InitS();
         }
         public byte[] ComputeHash(string text)
-        { 
+        {
             // get the text bytes and add padding
             int length = text.Length;
             byte[] textBytes = Encoding.ASCII.GetBytes(text);
@@ -23,41 +24,42 @@ namespace MD5CS
             uint[] M = new uint[16];
             byte[] temp = new byte[4];
             uint A, B, C, D, tempA;
-            for (int i = 0; i < textBytes.Length / 64; i += 64)
+            for (int i = 0; i < textBytes.Length; i += 64)
             {
                 A = a0; B = b0; C = c0; D = d0;
                 // set up current M
                 for (int j = 0; j < 16; j++)
                 {
                     Array.Copy(textBytes, i + j * 4, temp, 0, 4);
-                    Array.Reverse(temp); // little endian
+                    Array.Reverse(temp); // the bytes are to be read as in big endian
                     M[j] = BitConverter.ToUInt32(temp, 0);
                 }
                 for (int j = 0; j < 64; j++)
                 {
-                    A = addMod32(addMod32(addMod32(A, F(B, C, D, j)),M[g(j)]),K[j]);
+                    A = addMod32(addMod32(addMod32(A, F(B, C, D, j)), M[g(j)]), K[j]);
                     A <<= s[j]; A = addMod32(A, B);
                     tempA = A; A = D; D = C; C = B; B = tempA;
                 }
-                a0 = addMod32(a0, A);  b0 = addMod32(b0, B); c0 = addMod32(c0, C); d0 = addMod32(d0, D);
+                a0 = addMod32(a0, A); b0 = addMod32(b0, B); c0 = addMod32(c0, C); d0 = addMod32(d0, D);
             }
             byte[] result = new byte[16];
-            byte[] a = BitConverter.GetBytes(a0); Array.Reverse(a); Array.Copy(a, 0, result, 0, 4);//
-            byte[] b = BitConverter.GetBytes(b0); Array.Reverse(b); Array.Copy(b, 0, result, 4, 4);//
-            byte[] c = BitConverter.GetBytes(c0); Array.Reverse(c); Array.Copy(c, 0, result, 8, 4);//
-            byte[] d = BitConverter.GetBytes(d0); Array.Reverse(d); Array.Copy(d, 0, result, 12, 4);// little endian
+            Array.Copy(BitConverter.GetBytes(a0), 0, result, 0, 4);//
+            Array.Copy(BitConverter.GetBytes(b0), 0, result, 4, 4);//
+            Array.Copy(BitConverter.GetBytes(c0), 0, result, 8, 4);//
+            Array.Copy(BitConverter.GetBytes(d0), 0, result, 12, 4);//
+            a0 = 0x67452301; b0 = 0xefcdab89; c0 = 0x98badcfe; d0 = 0x10325476; // reset for next call
             return result;
         }
         private uint F(uint B, uint C, uint D, int round)
         {
-               if (round < 16)
-                    return (B & C) | ((~B) & D);
-               if (round < 32)
-                    return (D & B) | ((~D) & C);
-               if (round < 48)
-                    return B ^ C ^ D;
-               else 
-                    return C ^ (B | (~D));
+            if (round < 16)
+                return (B & C) | ((~B) & D);
+            if (round < 32)
+                return (D & B) | ((~D) & C);
+            if (round < 48)
+                return B ^ C ^ D;
+            else
+                return C ^ (B | (~D));
         }
         private int g(int i)
         {
@@ -67,7 +69,7 @@ namespace MD5CS
                 return (5 * i + 1) % 16;
             if (i < 48)
                 return (3 * i + 5) % 16;
-            else 
+            else
                 return (7 * i) % 16;
         }
         private byte[] AddPadding(int length)
@@ -75,7 +77,6 @@ namespace MD5CS
             int paddingInBytes = (512 - ((length * 8) % 512)) / 8;
             byte[] padding = new byte[paddingInBytes];
             byte[] lengthBytes = BitConverter.GetBytes((Int64)length);
-            Array.Reverse(lengthBytes); // little endian
             if (padding.Length <= 8)
             {
                 for (int i = 0; i < padding.Length; i++)
@@ -128,8 +129,19 @@ namespace MD5CS
     }
     class Program
     {
+        private static uint addMod32(uint a, uint b)
+        {
+            // there's probably a less clumsy way to do this
+            if ((uint.MaxValue - a) < b)
+            {
+                return b - (uint.MaxValue - a);
+            }
+            else
+                return a + b;
+        }
         static void Main(string[] args)
         {
+
             if (args.Length < 1)
             {
                 Console.WriteLine("Usage: MD5CS.exe <text/filename>");
@@ -141,6 +153,7 @@ namespace MD5CS
             MD5 md5 = new MD5();
             byte[] hash = md5.ComputeHash(text);
             Console.WriteLine("\n" + BitConverter.ToString(hash));
+            Console.ReadKey();
         }
     }
 }
