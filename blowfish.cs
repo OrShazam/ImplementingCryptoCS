@@ -308,9 +308,9 @@ namespace Blowfish
         }
         private void Swap(ref uint a, ref uint b)
         {
-            a += b;
-            b = a - b;
-            a = a - b;
+            uint tempA = a;
+	    a = b;
+	    b = tempA;
         }
 		private uint GetUInt(byte[] buffer, int i)
         {
