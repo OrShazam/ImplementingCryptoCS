@@ -129,16 +129,6 @@ namespace MD5CS
     }
     class Program
     {
-        private static uint addMod32(uint a, uint b)
-        {
-            // there's probably a less clumsy way to do this
-            if ((uint.MaxValue - a) < b)
-            {
-                return b - (uint.MaxValue - a);
-            }
-            else
-                return a + b;
-        }
         static void Main(string[] args)
         {
 
